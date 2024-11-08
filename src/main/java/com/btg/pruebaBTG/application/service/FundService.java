@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.btg.pruebaBTG.domain.core.SesEmailService;
+import com.btg.pruebaBTG.domain.core.SnsService;
 import com.btg.pruebaBTG.domain.model.entities.Fund;
 import com.btg.pruebaBTG.domain.model.entities.Transaction;
 import com.btg.pruebaBTG.domain.model.entities.User;
@@ -22,12 +24,16 @@ public class FundService {
     private final FundRepository fundRepository;
     private final TransactionRepository transactionRepository;
     private final UserFundInvestmentRepository userFundInvestmentRepository;
+    private final SesEmailService sesEmailService;
+    private final SnsService snsService;
 
-    public FundService(UserRepository userRepository, FundRepository fundRepository, TransactionRepository transactionRepository, UserFundInvestmentRepository userFundInvestmentRepository) {
+    public FundService(UserRepository userRepository, FundRepository fundRepository, TransactionRepository transactionRepository, UserFundInvestmentRepository userFundInvestmentRepository, SesEmailService sesEmailService, SnsService snsService) {
         this.userRepository = userRepository;
         this.fundRepository = fundRepository;
         this.transactionRepository = transactionRepository;
         this.userFundInvestmentRepository = userFundInvestmentRepository;
+        this.sesEmailService = sesEmailService;
+        this.snsService = snsService;
     }
 
     /**
@@ -68,7 +74,7 @@ public class FundService {
         transactionRepository.save(transaction);
 
         // Envía una notificación al usuario
-        sendNotification(user, "Subscription successful to the fund " + fund.getName());
+        sendNotification(user, "Subscription", "Subscription successful to the fund " + fund.getName());
     }
 
     /**
@@ -96,7 +102,7 @@ public class FundService {
         userFundInvestmentRepository.save(investment);
 
         // Envía una notificación al usuario
-        sendNotification(user, "Cancellation successful for the fund " + fund.getName());
+        sendNotification(user, "Cancellation", "Cancellation successful for the fund " + fund.getName());
     }
 
     /**
@@ -113,9 +119,9 @@ public class FundService {
      * @param user Usuario al que se enviará la notificación.
      * @param message Mensaje que se enviará al usuario.
      */
-    private void sendNotification(User user, String message) {
+    private void sendNotification(User user, String subject, String message) {
         if ("email".equalsIgnoreCase(user.getPreferredNotification())) {
-            sendEmail(user.getEmail(), message);
+            sendEmail(user.getEmail(), subject, message);
         } else if ("sms".equalsIgnoreCase(user.getPreferredNotification())) {
             sendSms(user.getPhoneNumber(), message);
         } else {
@@ -126,11 +132,12 @@ public class FundService {
     /**
      * Método para enviar mensaje por correo.
      * @param email
+     * @param subject
      * @param message
      */
-    private void sendEmail(String email, String message) {
-        // TODO: Lógica para enviar el email
+    private void sendEmail(String email, String subject,  String message) {
         System.out.println("Sending email to " + email + ": " + message);
+        sesEmailService.sendEmail(email, subject, message);
     }
 
     /**
@@ -139,7 +146,7 @@ public class FundService {
      * @param message
      */
     private void sendSms(String phoneNumber, String message) {
-        // TODO: Lógica para enviar SMS
         System.out.println("Sending SMS to " + phoneNumber + ": " + message);
+        snsService.sendSms(phoneNumber, message);
     }
 }

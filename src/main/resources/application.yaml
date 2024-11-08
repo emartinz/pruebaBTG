@@ -25,3 +25,9 @@ logging:
 # Si no necesitas CORS, puedes omitir esta sección
 #cors:
 #  allowed-origin-patterns: "https://yourfrontenddomain.com"
+
+aws:
+  ses:
+    sourceEmail: exposicionesamz@gmail.com # IMPORTANTE: En ambiente de sandBox deben estar verificados en AWS SES tanto el remitente, como el destinatario
+  sns:
+    topicArn: arn:aws:sns:us-east-1:123456789012:SMS
