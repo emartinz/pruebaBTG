@@ -35,7 +35,7 @@ public class DataInitializer {
         //TODO: Quitar datos privados
         //Lista de Usuarios predeterminados
         List<User> defaultUsers = Arrays.asList(
-            new User(null, "Andres Martinez", 100000, "email", "edgar.a.mz@gmail.com", "3044178009")
+            new User(null, "Andres Martinez", 500000, "email", "edgar.a.mz@gmail.com", "3044178009")
         );
 
         // Crea los Usuarios si no existen

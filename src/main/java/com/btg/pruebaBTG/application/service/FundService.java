@@ -44,17 +44,22 @@ public class FundService {
      */
     @Transactional
     public void subscribeToFund(String userId, String fundId, double investmentAmount) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Fund fund = fundRepository.findById(fundId).orElseThrow(() -> new RuntimeException("Fund not found"));
+        // Verifica si el usuario tiene saldo suficiente para suscribirse al fondo
+        if (investmentAmount <= 0) {
+            throw new RuntimeException("El monto a invertir no puede ser igual o inferior a cero.");
+        }
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+        Fund fund = fundRepository.findById(fundId).orElseThrow(() -> new RuntimeException("Fondo no encontrado."));
 
         // Verifica si el usuario tiene saldo suficiente para suscribirse al fondo
         if (investmentAmount < fund.getMinimumAmount()) {
-            throw new RuntimeException("Insufficient balance to subscribe to the fund " + fund.getName());
+            throw new RuntimeException("El monto ingresado no es suficiente para vincularse al fondo " + fund.getName() + ". Monto minimo: " + fund.getMinimumAmount());
         }
 
         // Verifica si el usuario tiene saldo suficiente para invertir el monto especificado
         if (user.getBalance() < investmentAmount) {
-            throw new RuntimeException("Insufficient balance to invest " + investmentAmount + " in the fund " + fund.getName());
+            throw new RuntimeException("No tiene saldo disponible para vincularse al fondo " + fund.getName());
         }
         
         // Actualiza el saldo del usuario y guarda la transacción
@@ -74,7 +79,7 @@ public class FundService {
         transactionRepository.save(transaction);
 
         // Envía una notificación al usuario
-        sendNotification(user, "Subscription", "Subscription successful to the fund " + fund.getName());
+        sendNotification(user, "Subscripcion", "La subscripcion al fondo " + fund.getName() + " se realizó correctamente.");
     }
 
     /**
@@ -84,9 +89,10 @@ public class FundService {
      */
     @Transactional
     public void cancelSubscription(String userId, String fundId) {
-        Fund fund = fundRepository.findById(fundId).orElseThrow(() -> new RuntimeException("Fund not found"));
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        UserFundInvestment investment = userFundInvestmentRepository.findByUserIdAndFundIdAndStatus(userId, fundId, UserFundInvestmentStatus.ACTIVE).orElseThrow(() -> new RuntimeException("The user " + user.getName() + " is not subscribed to the fund " + fund.getName()));
+        Fund fund = fundRepository.findById(fundId).orElseThrow(() -> new RuntimeException("Fondo no encontrado."));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+        UserFundInvestment investment = userFundInvestmentRepository.findByUserIdAndFundIdAndStatus(userId, fundId, UserFundInvestmentStatus.ACTIVE)
+            .orElseThrow(() -> new RuntimeException("El usuario " + user.getName() + " no está suscrito al fondo " + fund.getName()));
         
         // Actualiza el saldo del usuario y guarda la transacción de cancelación
         user.setBalance(user.getBalance() + investment.getInvestmentAmount());
@@ -102,7 +108,7 @@ public class FundService {
         userFundInvestmentRepository.save(investment);
 
         // Envía una notificación al usuario
-        sendNotification(user, "Cancellation", "Cancellation successful for the fund " + fund.getName());
+        sendNotification(user, "Cancelacion", "La cancelacion de la subscripcion al fondo " + fund.getName() + " se realizó correctamente.");
     }
 
     /**
@@ -125,7 +131,7 @@ public class FundService {
         } else if ("sms".equalsIgnoreCase(user.getPreferredNotification())) {
             sendSms(user.getPhoneNumber(), message);
         } else {
-            System.out.println("Notification could not be sent: no preference specified.");
+            System.out.println("La notificación no puede ser enviada: No se especificó un medio de notificación válido.");
         }
     }
 
@@ -136,7 +142,7 @@ public class FundService {
      * @param message
      */
     private void sendEmail(String email, String subject,  String message) {
-        System.out.println("Sending email to " + email + ": " + message);
+        System.out.println("Enviando correo a " + email + ": " + message);
         sesEmailService.sendEmail(email, subject, message);
     }
 
@@ -146,7 +152,7 @@ public class FundService {
      * @param message
      */
     private void sendSms(String phoneNumber, String message) {
-        System.out.println("Sending SMS to " + phoneNumber + ": " + message);
+        System.out.println("Enviando SMS a " + phoneNumber + ": " + message);
         snsService.sendSms(phoneNumber, message);
     }
 }

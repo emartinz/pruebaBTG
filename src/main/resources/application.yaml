@@ -2,6 +2,9 @@
 spring:
   application:
     name: pruebaBTG
+  output:
+    ansi:
+      enabled: always
   data:
     mongodb:
       uri: ${MONGODB_URI}    # Conexión a MongoDB. MONGODB_URI será pasada como variable de entorno en ECS.
@@ -29,5 +32,3 @@ logging:
 aws:
   ses:
     sourceEmail: exposicionesamz@gmail.com # IMPORTANTE: En ambiente de sandBox deben estar verificados en AWS SES tanto el remitente, como el destinatario
-  sns:
-    topicArn: arn:aws:sns:us-east-1:123456789012:SMS

@@ -23,6 +23,12 @@ public class SesEmailService {
         this.sourceEmail = sourceEmail;
     }
 
+    /**
+     * Método para envíar correos
+     * @param toAddress Destinatario
+     * @param subject   Asunto
+     * @param bodyText  Mensaje
+     */
     public void sendEmail(String toAddress, String subject, String bodyText) {
         // Crear el mensaje de correo electrónico
         SendEmailRequest emailRequest = SendEmailRequest.builder()
@@ -39,9 +45,9 @@ public class SesEmailService {
         // Enviar el correo electrónico
         try {
             SendEmailResponse response = sesClient.sendEmail(emailRequest);
-            System.out.println("Email sent! Message ID: " + response.messageId());
+            System.out.println("Email enviado! Message ID: " + response.messageId());
         } catch (SesException e) {
-            System.err.println("Failed to send email: " + e.awsErrorDetails().errorMessage());
+            System.err.println("Ocurrió un erro al enviar correo a: " + e.awsErrorDetails().errorMessage());
         }
     }
 }
