@@ -1,11 +1,14 @@
 package com.btg.pruebaBTG.infrastructure.adapter.in;
 
+import java.util.Objects;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.btg.pruebaBTG.application.dto.SubscriptionRequest;
 import com.btg.pruebaBTG.application.service.FundService;
 
 @RestController
@@ -26,12 +29,18 @@ public class FundController {
      * @return Respuesta con éxito o error
      */
     @PostMapping("/subscribe")
-    public ResponseEntity<String> subscribeToFund(
-            @RequestParam String userId,
-            @RequestParam String fundId,
-            @RequestParam double investmentAmount) {
+    public ResponseEntity<String> subscribeToFund(@RequestBody SubscriptionRequest subscriptionRequest) {
         try {
-            fundService.subscribeToFund(userId, fundId, investmentAmount);
+            // Validar que investmentAmount no sea nulo
+            if (Objects.isNull(subscriptionRequest.getInvestmentAmount())) {
+                return ResponseEntity.badRequest().body("Investment amount cannot be null.");
+            }
+
+            // Validar que investmentAmount sea positivo (si no lo es, devolver error)
+            if (subscriptionRequest.getInvestmentAmount() <= 0) {
+                return ResponseEntity.badRequest().body("Investment amount must be greater than 0.");
+            }
+            fundService.subscribeToFund(subscriptionRequest.getUserId(), subscriptionRequest.getFundId(), subscriptionRequest.getInvestmentAmount());
             return ResponseEntity.ok("Subscription successful.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -45,11 +54,9 @@ public class FundController {
      * @return Respuesta con éxito o error
      */
     @PostMapping("/cancel")
-    public ResponseEntity<String> cancelSubscription(
-            @RequestParam String userId,
-            @RequestParam String fundId) {
+    public ResponseEntity<String> cancelSubscription(@RequestBody SubscriptionRequest subscriptionRequest) {
         try {
-            fundService.cancelSubscription(userId, fundId);
+            fundService.cancelSubscription(subscriptionRequest.getUserId(), subscriptionRequest.getFundId());
             return ResponseEntity.ok("Cancellation successful.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

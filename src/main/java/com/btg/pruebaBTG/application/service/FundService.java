@@ -4,11 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.btg.pruebaBTG.domain.model.entities.Fund;
 import com.btg.pruebaBTG.domain.model.entities.Transaction;
 import com.btg.pruebaBTG.domain.model.entities.User;
 import com.btg.pruebaBTG.domain.model.entities.UserFundInvestment;
+import com.btg.pruebaBTG.domain.model.enums.UserFundInvestmentStatus;
 import com.btg.pruebaBTG.infrastructure.adapter.out.FundRepository;
 import com.btg.pruebaBTG.infrastructure.adapter.out.TransactionRepository;
 import com.btg.pruebaBTG.infrastructure.adapter.out.UserFundInvestmentRepository;
@@ -34,12 +36,13 @@ public class FundService {
      * @param fundId Id del fondo al que el usuario se subscribe
      * @param investmentAmount monto de inversion
      */
+    @Transactional
     public void subscribeToFund(String userId, String fundId, double investmentAmount) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         Fund fund = fundRepository.findById(fundId).orElseThrow(() -> new RuntimeException("Fund not found"));
 
         // Verifica si el usuario tiene saldo suficiente para suscribirse al fondo
-        if (user.getBalance() < fund.getMinimumAmount()) {
+        if (investmentAmount < fund.getMinimumAmount()) {
             throw new RuntimeException("Insufficient balance to subscribe to the fund " + fund.getName());
         }
 
@@ -53,15 +56,15 @@ public class FundService {
         userRepository.save(user);
 
         // Busca o crea un registro en UserFundInvestment para el usuario y el fondo
-        UserFundInvestment investment = userFundInvestmentRepository.findByUserIdAndFundId(userId, fundId)
-        .orElse(new UserFundInvestment(null, userId, fundId, 0));
+        UserFundInvestment investment = userFundInvestmentRepository.findByUserIdAndFundIdAndStatus(userId, fundId, UserFundInvestmentStatus.ACTIVE)
+        .orElse(new UserFundInvestment(null, userId, fundId, 0, UserFundInvestmentStatus.ACTIVE));
 
         // Actualiza el monto total de inversión
         investment.setInvestmentAmount(investment.getInvestmentAmount() + investmentAmount);
         userFundInvestmentRepository.save(investment);
 
         // Guarda un registro de la transacción
-        Transaction transaction = new Transaction(null, userId, fundId, "subscription", investment.getInvestmentAmount(), LocalDateTime.now());
+        Transaction transaction = new Transaction(null, userId, fundId, investment.getId(), "subscription", investmentAmount, LocalDateTime.now());
         transactionRepository.save(transaction);
 
         // Envía una notificación al usuario
@@ -73,16 +76,24 @@ public class FundService {
      * @param userId Id del usuario que cancela la subscripción.
      * @param fundId Id del fondo al cual el usuario se va a desubscribir.
      */
+    @Transactional
     public void cancelSubscription(String userId, String fundId) {
         Fund fund = fundRepository.findById(fundId).orElseThrow(() -> new RuntimeException("Fund not found"));
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        UserFundInvestment investment = userFundInvestmentRepository.findByUserIdAndFundIdAndStatus(userId, fundId, UserFundInvestmentStatus.ACTIVE).orElseThrow(() -> new RuntimeException("The user " + user.getName() + " is not subscribed to the fund " + fund.getName()));
         
         // Actualiza el saldo del usuario y guarda la transacción de cancelación
-        user.setBalance(user.getBalance() + fund.getMinimumAmount());
+        user.setBalance(user.getBalance() + investment.getInvestmentAmount());
         userRepository.save(user);
 
-        Transaction transaction = new Transaction(null, userId, fundId, "cancellation", fund.getMinimumAmount(), LocalDateTime.now());
+        // Guarda un registro de la transacción
+        Transaction transaction = new Transaction(null, userId, fundId, investment.getId(), "cancellation", investment.getInvestmentAmount(), LocalDateTime.now());
         transactionRepository.save(transaction);
+
+        // Actualiza el monto total de inversión
+        investment.setInvestmentAmount(0);
+        investment.setStatus(UserFundInvestmentStatus.CANCELLED);
+        userFundInvestmentRepository.save(investment);
 
         // Envía una notificación al usuario
         sendNotification(user, "Cancellation successful for the fund " + fund.getName());

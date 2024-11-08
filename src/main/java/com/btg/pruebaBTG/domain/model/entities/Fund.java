@@ -1,9 +1,6 @@
 package com.btg.pruebaBTG.domain.model.entities;
 
-import java.util.Map;
-
 import org.springframework.data.annotation.Id;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

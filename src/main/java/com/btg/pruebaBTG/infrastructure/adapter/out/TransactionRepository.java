@@ -9,4 +9,5 @@ import com.btg.pruebaBTG.domain.model.entities.Transaction;
 @Repository
 public interface TransactionRepository extends MongoRepository<Transaction, String> {
     List<Transaction> findByUserId(String userId);
+    List<Transaction> findByUserIdAndType(String userId, String type);
 }

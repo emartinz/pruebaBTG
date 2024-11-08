@@ -15,6 +15,7 @@ public class Transaction {
     private String id;
     private String userId;
     private String fundId;
+    private String investmentId;
     private String type;    // Tipo de transaccion
     private double amount;
     private LocalDateTime date;
