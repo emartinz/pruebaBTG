@@ -1,0 +1,27 @@
+# Configuración de MongoDB
+spring:
+  application:
+    name: pruebaBTG
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}    # Conexión a MongoDB. MONGODB_URI será pasada como variable de entorno en ECS.
+      database: bd_btg    # Nombre de la base de datos en MongoDB
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false  # Serializar fechas en formato ISO en lugar de timestamps
+
+# Configuración del servidor
+server:
+  port: 8080
+
+# Configuración de logs
+logging:
+  level:
+    root: INFO
+    com.btg.pruebaBTG: DEBUG
+
+# Configuración para CORS (opcional)
+# Puedes habilitar CORS para permitir que el frontend se comunique con el backend
+# Si no necesitas CORS, puedes omitir esta sección
+#cors:
+#  allowed-origin-patterns: "https://yourfrontenddomain.com"

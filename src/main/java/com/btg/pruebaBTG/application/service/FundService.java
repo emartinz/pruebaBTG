@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import com.btg.pruebaBTG.domain.model.entities.Fund;
 import com.btg.pruebaBTG.domain.model.entities.Transaction;
 import com.btg.pruebaBTG.domain.model.entities.User;
+import com.btg.pruebaBTG.domain.model.entities.UserFundInvestment;
 import com.btg.pruebaBTG.infrastructure.adapter.out.FundRepository;
 import com.btg.pruebaBTG.infrastructure.adapter.out.TransactionRepository;
+import com.btg.pruebaBTG.infrastructure.adapter.out.UserFundInvestmentRepository;
 import com.btg.pruebaBTG.infrastructure.adapter.out.UserRepository;
 
 @Service
@@ -17,19 +19,22 @@ public class FundService {
     private final UserRepository userRepository;
     private final FundRepository fundRepository;
     private final TransactionRepository transactionRepository;
+    private final UserFundInvestmentRepository userFundInvestmentRepository;
 
-    public FundService(UserRepository userRepository, FundRepository fundRepository, TransactionRepository transactionRepository) {
+    public FundService(UserRepository userRepository, FundRepository fundRepository, TransactionRepository transactionRepository, UserFundInvestmentRepository userFundInvestmentRepository) {
         this.userRepository = userRepository;
         this.fundRepository = fundRepository;
         this.transactionRepository = transactionRepository;
+        this.userFundInvestmentRepository = userFundInvestmentRepository;
     }
 
     /**
      * Método que maneja la subscripción de un usuario a un fondo específico.
      * @param userId Id del usuario que se subscribe al fondo específico.
      * @param fundId Id del fondo al que el usuario se subscribe
+     * @param investmentAmount monto de inversion
      */
-    public void subscribeToFund(String userId, String fundId) {
+    public void subscribeToFund(String userId, String fundId, double investmentAmount) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         Fund fund = fundRepository.findById(fundId).orElseThrow(() -> new RuntimeException("Fund not found"));
 
@@ -38,11 +43,25 @@ public class FundService {
             throw new RuntimeException("Insufficient balance to subscribe to the fund " + fund.getName());
         }
 
+        // Verifica si el usuario tiene saldo suficiente para invertir el monto especificado
+        if (user.getBalance() < investmentAmount) {
+            throw new RuntimeException("Insufficient balance to invest " + investmentAmount + " in the fund " + fund.getName());
+        }
+        
         // Actualiza el saldo del usuario y guarda la transacción
-        user.setBalance(user.getBalance() - fund.getMinimumAmount());
+        user.setBalance(user.getBalance() - investmentAmount);
         userRepository.save(user);
 
-        Transaction transaction = new Transaction(null, userId, fundId, "subscription", fund.getMinimumAmount(), LocalDateTime.now());
+        // Busca o crea un registro en UserFundInvestment para el usuario y el fondo
+        UserFundInvestment investment = userFundInvestmentRepository.findByUserIdAndFundId(userId, fundId)
+        .orElse(new UserFundInvestment(null, userId, fundId, 0));
+
+        // Actualiza el monto total de inversión
+        investment.setInvestmentAmount(investment.getInvestmentAmount() + investmentAmount);
+        userFundInvestmentRepository.save(investment);
+
+        // Guarda un registro de la transacción
+        Transaction transaction = new Transaction(null, userId, fundId, "subscription", investment.getInvestmentAmount(), LocalDateTime.now());
         transactionRepository.save(transaction);
 
         // Envía una notificación al usuario
@@ -56,7 +75,6 @@ public class FundService {
      */
     public void cancelSubscription(String userId, String fundId) {
         Fund fund = fundRepository.findById(fundId).orElseThrow(() -> new RuntimeException("Fund not found"));
-
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         
         // Actualiza el saldo del usuario y guarda la transacción de cancelación
