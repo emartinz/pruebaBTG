@@ -8,6 +8,7 @@ import com.btg.pruebaBTG.domain.core.SesEmailService;
 import com.btg.pruebaBTG.domain.core.SnsService;
 import com.btg.pruebaBTG.domain.model.entities.Fund;
 import com.btg.pruebaBTG.domain.model.entities.User;
+import com.btg.pruebaBTG.domain.model.enums.PreferredNotificationType;
 import com.btg.pruebaBTG.infrastructure.adapter.out.FundRepository;
 import com.btg.pruebaBTG.infrastructure.adapter.out.TransactionRepository;
 import com.btg.pruebaBTG.infrastructure.adapter.out.UserFundInvestmentRepository;
@@ -51,7 +52,7 @@ public class GenericTest {
      * @param preferredNotification Medio de Notificacion preferido
      * @return Usuario de Prueba
      */
-    protected User getTestUser(Double initialBalance, String preferredNotification) {
+    protected User getTestUser(Double initialBalance, PreferredNotificationType preferredNotification) {
         return getTestUser(null, null, initialBalance, preferredNotification, null, null);
     }
 
@@ -65,13 +66,13 @@ public class GenericTest {
      * @param phoneNumber Numero de Celular
      * @return Usuario de Prueba
      */
-    protected User getTestUser(String id, String name, Double initialBalance, String preferredNotification, String email, String phoneNumber) {
+    protected User getTestUser(String id, String name, Double initialBalance, PreferredNotificationType preferredNotification, String email, String phoneNumber) {
         User testUser = new User();
         testUser.setId(id != null ? id : "user123");
         testUser.setName(name != null ? name : "Usuario de Prueba");
         testUser.setEmail(email != null ? email : "testuser@example.com");
         testUser.setBalance(initialBalance != null ? initialBalance : 100000.0);
-        testUser.setPreferredNotification(preferredNotification != null ? preferredNotification : "email");
+        testUser.setPreferredNotification(preferredNotification != null ? preferredNotification : PreferredNotificationType.EMAIL);
         testUser.setPhoneNumber(phoneNumber != null? phoneNumber : "+573001234567");
         return testUser;
     }

@@ -1,7 +1,6 @@
 package com.btg.pruebaBTG.application.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +11,7 @@ import com.btg.pruebaBTG.domain.model.entities.Fund;
 import com.btg.pruebaBTG.domain.model.entities.Transaction;
 import com.btg.pruebaBTG.domain.model.entities.User;
 import com.btg.pruebaBTG.domain.model.entities.UserFundInvestment;
+import com.btg.pruebaBTG.domain.model.enums.PreferredNotificationType;
 import com.btg.pruebaBTG.domain.model.enums.UserFundInvestmentStatus;
 import com.btg.pruebaBTG.infrastructure.adapter.out.FundRepository;
 import com.btg.pruebaBTG.infrastructure.adapter.out.TransactionRepository;
@@ -112,23 +112,14 @@ public class FundService {
     }
 
     /**
-     * Método que obtiene el historial de transacciones de un usuario específico.
-     * @param userId Id del usuario del cual se quiere obtener el historial.
-     * @return Lista del historial de transacciones del usuario específicado.
-     */
-    public List<Transaction> getTransactionHistory(String userId) {
-        return transactionRepository.findByUserId(userId);
-    }
-
-    /**
      * Método que envía una notificacion a los usuarios basándose en las preferencias de notificación del usuario.
      * @param user Usuario al que se enviará la notificación.
      * @param message Mensaje que se enviará al usuario.
      */
     private void sendNotification(User user, String subject, String message) {
-        if ("email".equalsIgnoreCase(user.getPreferredNotification())) {
+        if (PreferredNotificationType.EMAIL.equals(user.getPreferredNotification())) {
             sendEmail(user.getEmail(), subject, message);
-        } else if ("sms".equalsIgnoreCase(user.getPreferredNotification())) {
+        } else if (PreferredNotificationType.SMS.equals(user.getPreferredNotification())) {
             sendSms(user.getPhoneNumber(), message);
         } else {
             System.out.println("La notificación no puede ser enviada: No se especificó un medio de notificación válido.");

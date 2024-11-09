@@ -33,15 +33,15 @@ public class FundController {
         try {
             // Validar que investmentAmount no sea nulo
             if (Objects.isNull(subscriptionRequest.getInvestmentAmount())) {
-                return ResponseEntity.badRequest().body("Investment amount cannot be null.");
+                return ResponseEntity.badRequest().body("El monto de inversion no puede ser nulo o cero.");
             }
 
             // Validar que investmentAmount sea positivo (si no lo es, devolver error)
             if (subscriptionRequest.getInvestmentAmount() <= 0) {
-                return ResponseEntity.badRequest().body("Investment amount must be greater than 0.");
+                return ResponseEntity.badRequest().body("El monto de inversion debe ser mayor a cero.");
             }
             fundService.subscribeToFund(subscriptionRequest.getUserId(), subscriptionRequest.getFundId(), subscriptionRequest.getInvestmentAmount());
-            return ResponseEntity.ok("Subscription successful.");
+            return ResponseEntity.ok("Subscripción Exitosa.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -57,7 +57,7 @@ public class FundController {
     public ResponseEntity<String> cancelSubscription(@RequestBody SubscriptionRequest subscriptionRequest) {
         try {
             fundService.cancelSubscription(subscriptionRequest.getUserId(), subscriptionRequest.getFundId());
-            return ResponseEntity.ok("Cancellation successful.");
+            return ResponseEntity.ok("Cancelación exitosa.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -18,8 +18,8 @@ public class TransactionService {
 
     /**
      * Método que obtiene el historial de transacciones de un usuario específico.
-     * @param userId Id del usuario
-     * @return Lista de transacciones
+     * @param userId Id del usuario del cual se quiere obtener el historial.
+     * @return Lista del historial de transacciones del usuario específicado.
      */
     public List<Transaction> getTransactionHistory(String userId) {
         return transactionRepository.findByUserId(userId);

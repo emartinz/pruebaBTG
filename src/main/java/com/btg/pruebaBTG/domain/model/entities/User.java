@@ -2,6 +2,8 @@ package com.btg.pruebaBTG.domain.model.entities;
 
 import org.springframework.data.annotation.Id;
 
+import com.btg.pruebaBTG.domain.model.enums.PreferredNotificationType;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +16,7 @@ public class User {
     private String id;
     private String name;
     private double balance;
-    private String preferredNotification;
+    private PreferredNotificationType preferredNotification;
     private String email;
     private String phoneNumber;
 }

@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.btg.pruebaBTG.domain.model.entities.Fund;
 import com.btg.pruebaBTG.domain.model.entities.User;
+import com.btg.pruebaBTG.domain.model.enums.PreferredNotificationType;
 import com.btg.pruebaBTG.infrastructure.adapter.out.FundRepository;
 import com.btg.pruebaBTG.infrastructure.adapter.out.UserRepository;
 
@@ -32,10 +33,16 @@ public class DataInitializer {
     }
 
     private void loadDefaultUsers() {
-        //TODO: Quitar datos privados
         //Lista de Usuarios predeterminados
         List<User> defaultUsers = Arrays.asList(
-            new User(null, "Andres Martinez", 500000, "email", "edgar.a.mz@gmail.com", "3044178009")
+            new User(
+                null, 
+                "Andres Martinez", 
+                500000, 
+                PreferredNotificationType.EMAIL, 
+                "correo@dominio.com", 
+                "+573012345678"
+            )
         );
 
         // Crea los Usuarios si no existen
