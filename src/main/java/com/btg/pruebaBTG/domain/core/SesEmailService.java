@@ -17,7 +17,7 @@ public class SesEmailService {
     // Inyecta el valor de sourceEmail desde el archivo de configuración o variable de entorno
     public SesEmailService(@Value("${aws.ses.sourceEmail}") String sourceEmail) {
         this.sesClient = SesClient.builder()
-                .region(Region.US_EAST_1) // Cambia la región según tus necesidades
+                .region(Region.US_EAST_1)
                 .credentialsProvider(DefaultCredentialsProvider.create())
                 .build();
         this.sourceEmail = sourceEmail;

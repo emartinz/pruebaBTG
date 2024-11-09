@@ -16,7 +16,7 @@ public class SnsService {
     // Inyecta el valor de topicArn desde el archivo de configuración o variable de entorno
     public SnsService() {
         this.snsClient = SnsClient.builder()
-                .region(Region.US_EAST_1) // Cambia la región según tus necesidades
+                .region(Region.US_EAST_1)
                 .credentialsProvider(DefaultCredentialsProvider.create())
                 .build();
     }

@@ -8,7 +8,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI}    # Conexión a MongoDB. MONGODB_URI será pasada como variable de entorno en ECS.
-      database: bd_btg    # Nombre de la base de datos en MongoDB
+      database: ${MONGO_DATABASE}    # Nombre de la base de datos en MongoDB
   jackson:
     serialization:
       write-dates-as-timestamps: false  # Serializar fechas en formato ISO en lugar de timestamps
@@ -30,5 +30,9 @@ logging:
 #  allowed-origin-patterns: "https://yourfrontenddomain.com"
 
 aws:
+  accessKeyId: ${AWS_ACCESS_KEY_ID}
+  secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
   ses:
-    sourceEmail: exposicionesamz@gmail.com # IMPORTANTE: En ambiente de sandBox deben estar verificados en AWS SES tanto el remitente, como el destinatario
+    sourceEmail: ${EMAIL_FROM} # IMPORTANTE: En ambiente de sandBox deben estar verificados en AWS SES tanto el remitente, como el destinatario
+    
