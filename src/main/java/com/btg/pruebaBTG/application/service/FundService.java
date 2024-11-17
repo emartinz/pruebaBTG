@@ -1,6 +1,7 @@
 package com.btg.pruebaBTG.application.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -124,6 +125,14 @@ public class FundService {
         } else {
             System.out.println("La notificación no puede ser enviada: No se especificó un medio de notificación válido.");
         }
+    }
+
+    /**
+     * Método que obtiene lista de los Fondos disponibles
+     * @return List<Fund>
+     */
+    public List<Fund> getFundsList() {
+        return fundRepository.findAll();
     }
 
     /**

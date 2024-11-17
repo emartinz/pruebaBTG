@@ -10,4 +10,5 @@ import com.btg.pruebaBTG.domain.model.entities.User;
 public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findById(String id);
     boolean existsByName(String name);
+    boolean existsByEmail(String email);
 }
