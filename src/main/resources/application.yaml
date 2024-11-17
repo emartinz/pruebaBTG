@@ -12,7 +12,8 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false  # Serializar fechas en formato ISO en lugar de timestamps
-
+  config:
+    import: optional:file:.env[.properties]
 # Configuración del servidor
 server:
   port: 8080
@@ -23,11 +24,7 @@ logging:
     root: INFO
     com.btg.pruebaBTG: DEBUG
 
-# Configuración para CORS (opcional)
-# Puedes habilitar CORS para permitir que el frontend se comunique con el backend
-# Si no necesitas CORS, puedes omitir esta sección
-#cors:
-#  allowed-origin-patterns: "https://yourfrontenddomain.com"
+
 
 aws:
   accessKeyId: ${AWS_ACCESS_KEY_ID}

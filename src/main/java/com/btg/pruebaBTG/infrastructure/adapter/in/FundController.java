@@ -1,15 +1,20 @@
 package com.btg.pruebaBTG.infrastructure.adapter.in;
 
+import java.util.List;
 import java.util.Objects;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.btg.pruebaBTG.application.dto.ApiResponse;
 import com.btg.pruebaBTG.application.dto.SubscriptionRequest;
 import com.btg.pruebaBTG.application.service.FundService;
+import com.btg.pruebaBTG.domain.model.entities.Fund;
 
 @RestController
 @RequestMapping("/api/funds")
@@ -29,21 +34,29 @@ public class FundController {
      * @return Respuesta con éxito o error
      */
     @PostMapping("/subscribe")
-    public ResponseEntity<String> subscribeToFund(@RequestBody SubscriptionRequest subscriptionRequest) {
+    public ResponseEntity<ApiResponse<Object>> subscribeToFund(@RequestBody SubscriptionRequest subscriptionRequest) {
         try {
             // Validar que investmentAmount no sea nulo
             if (Objects.isNull(subscriptionRequest.getInvestmentAmount())) {
-                return ResponseEntity.badRequest().body("El monto de inversion no puede ser nulo o cero.");
+                return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    "error", 
+                    "El monto de inversión no puede ser nulo o cero.", 
+                    null
+                ));
             }
 
             // Validar que investmentAmount sea positivo (si no lo es, devolver error)
             if (subscriptionRequest.getInvestmentAmount() <= 0) {
-                return ResponseEntity.badRequest().body("El monto de inversion debe ser mayor a cero.");
+                return ResponseEntity.badRequest().body(new ApiResponse<>(
+                    "error", 
+                    "El monto de inversión debe ser mayor a cero.",
+                    null
+                ));
             }
             fundService.subscribeToFund(subscriptionRequest.getUserId(), subscriptionRequest.getFundId(), subscriptionRequest.getInvestmentAmount());
-            return ResponseEntity.ok("Subscripción Exitosa.");
+            return ResponseEntity.ok(new ApiResponse<>("success", "Subscripción exitosa.", null));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>("error", e.getMessage(), null));
         }
     }
 
@@ -54,12 +67,35 @@ public class FundController {
      * @return Respuesta con éxito o error
      */
     @PostMapping("/cancel")
-    public ResponseEntity<String> cancelSubscription(@RequestBody SubscriptionRequest subscriptionRequest) {
+    public ResponseEntity<ApiResponse<Object>> cancelSubscription(@RequestBody SubscriptionRequest subscriptionRequest) {
         try {
             fundService.cancelSubscription(subscriptionRequest.getUserId(), subscriptionRequest.getFundId());
-            return ResponseEntity.ok("Cancelación exitosa.");
+            return ResponseEntity.ok(new ApiResponse<>(
+                "success", 
+                "Cancelación exitosa.",
+                null
+            ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(
+                "error", e.getMessage(), null
+            ));
         }
+    }
+    
+    /**
+     * Método para obtener lista de Fondos disponibles
+     * @param entity
+     * @return
+     */
+    @GetMapping("/getList")
+    public ResponseEntity<ApiResponse<List<Fund>>> getList() {
+        List<Fund> funds = fundService.getFundsList();
+    
+        // Verifica si la lista está vacía y responde con HTTP 204 No Content
+        if (funds.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        
+        return ResponseEntity.ok(new ApiResponse<>("success", "Fondos encontrados.", funds));
     }
 }
